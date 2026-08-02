@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart3, Trophy, Target, CheckCircle2, AlertCircle, RefreshCw, Sparkles, Activity } from 'lucide-react';
+import { BarChart3, Trophy, Target, CheckCircle2, RefreshCw, Sparkles, Activity } from 'lucide-react';
 
-export default function AnalyticsModule({ context }) {
+export default function AnalyticsModule({ _context }) {
   const [stats, setStats] = useState({
     totalQuizzes: 0,
     totalQuestions: 0,

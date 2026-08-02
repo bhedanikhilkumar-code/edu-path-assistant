@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Network, Sparkles, Loader2, RefreshCw, AlertCircle, Share2, Layers } from 'lucide-react';
+import { Network, Sparkles, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
 import { generateMindMap, getFriendlyErrorMessage } from '../services/gemini';
 
 const BRANCH_COLORS = [
