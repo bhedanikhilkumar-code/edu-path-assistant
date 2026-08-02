@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Lightbulb, AlertCircle } from 'lucide-react';
+import { Send, Bot, User, Lightbulb, AlertCircle, Volume2, VolumeX, Copy, Check } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { askDoubt, getFriendlyErrorMessage } from '../services/gemini';
 
@@ -15,8 +15,33 @@ export default function ChatInterface({ context, language }) {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [speakingIndex, setSpeakingIndex] = useState(null);
+  const [copiedIndex, setCopiedIndex] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+
+  const handleCopy = (content, index) => {
+    navigator.clipboard.writeText(content);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
+  const handleSpeak = (text, index) => {
+    if (!('speechSynthesis' in window)) return;
+    if (speakingIndex === index) {
+      window.speechSynthesis.cancel();
+      setSpeakingIndex(null);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const cleanText = text.replace(/[*#_`]/g, '');
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.onend = () => setSpeakingIndex(null);
+    utterance.onerror = () => setSpeakingIndex(null);
+    setSpeakingIndex(index);
+    window.speechSynthesis.speak(utterance);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -93,9 +118,29 @@ export default function ChatInterface({ context, language }) {
             </div>
             <div className="message-bubble">
               {msg.role === 'assistant' ? (
-                <div className="markdown-content">
-                  <ReactMarkdown>{msg.content}</ReactMarkdown>
-                </div>
+                <>
+                  <div className="markdown-content">
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  </div>
+                  <div className="message-actions">
+                    <button
+                      className="btn-action"
+                      onClick={() => handleSpeak(msg.content, i)}
+                      title={speakingIndex === i ? "Stop speaking" : "Listen (Read Aloud)"}
+                    >
+                      {speakingIndex === i ? <VolumeX size={14} color="var(--accent-rose)" /> : <Volume2 size={14} />}
+                      <span>{speakingIndex === i ? 'Stop' : 'Listen'}</span>
+                    </button>
+                    <button
+                      className="btn-action"
+                      onClick={() => handleCopy(msg.content, i)}
+                      title="Copy response"
+                    >
+                      {copiedIndex === i ? <Check size={14} color="var(--accent-emerald)" /> : <Copy size={14} />}
+                      <span>{copiedIndex === i ? 'Copied' : 'Copy'}</span>
+                    </button>
+                  </div>
+                </>
               ) : (
                 <p>{msg.content}</p>
               )}
@@ -281,6 +326,32 @@ export default function ChatInterface({ context, language }) {
           border: 1px solid var(--surface-border);
           color: var(--text-primary);
           border-bottom-left-radius: var(--space-1);
+        }
+
+        .message-actions {
+          display: flex;
+          align-items: center;
+          gap: var(--space-3);
+          margin-top: var(--space-3);
+          padding-top: var(--space-2);
+          border-top: 1px dashed rgba(255,255,255,0.08);
+        }
+        .btn-action {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          background: transparent;
+          border: none;
+          color: var(--text-tertiary);
+          font-size: 11px;
+          cursor: pointer;
+          padding: 2px 6px;
+          border-radius: var(--radius-sm);
+          transition: all var(--transition-fast);
+        }
+        .btn-action:hover {
+          color: var(--text-primary);
+          background: rgba(255,255,255,0.08);
         }
 
         .chat-error {

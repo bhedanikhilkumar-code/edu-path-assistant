@@ -5,6 +5,7 @@ import MobileNav from './components/MobileNav';
 import ContextPanel from './components/ContextPanel';
 import ChatInterface from './components/ChatInterface';
 import QuizModule from './components/QuizModule';
+import FlashcardsModule from './components/FlashcardsModule';
 import ApiKeyModal from './components/ApiKeyModal';
 import { initializeGemini } from './services/gemini';
 
@@ -90,6 +91,11 @@ export default function App() {
           )}
           {currentView === 'quiz' && (
             <QuizModule
+              context={contextText}
+            />
+          )}
+          {currentView === 'flashcards' && (
+            <FlashcardsModule
               context={contextText}
             />
           )}

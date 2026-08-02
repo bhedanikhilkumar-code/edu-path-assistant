@@ -1,9 +1,10 @@
-import { BookOpen, MessageCircle, BrainCircuit } from 'lucide-react';
+import { BookOpen, MessageCircle, BrainCircuit, Layers } from 'lucide-react';
 
 const navItems = [
   { id: 'context', label: 'Context', icon: BookOpen },
   { id: 'chat', label: 'Chat', icon: MessageCircle },
   { id: 'quiz', label: 'Quiz', icon: BrainCircuit },
+  { id: 'flashcards', label: 'Cards', icon: Layers },
 ];
 
 export default function MobileNav({ activeView, onViewChange, hasContext }) {

@@ -201,6 +201,110 @@ ${context}
   }
 };
 
+export const generateFlashcards = async (context) => {
+  if (!context || !context.trim()) {
+    throw new Error("Please add your course context or lecture notes in the 'Course Context' tab before generating flashcards.");
+  }
+
+  const provider = localStorage.getItem("edu-path-api-provider") || "gemini";
+  const apiKey = localStorage.getItem("edu-path-api-key") || "";
+
+  const prompt = `
+Generate exactly 5 essential flashcards from the following educational context for quick revision and remedial study.
+Each flashcard must summarize a core concept, key term, or principle.
+
+Return the response in a JSON object with a single root key "flashcards", which is an array of objects.
+Each object in "flashcards" must contain:
+- "id": integer (0 to 4)
+- "concept": string (The question or core term on front of card)
+- "explanation": string (Clear 2-3 sentence explanation on back of card)
+- "keyTakeaway": string (A one-sentence takeaway or memory trick)
+
+Context:
+${context}
+`;
+
+  const parseJsonResponse = (text) => {
+    if (!text) throw new Error("Empty response received from AI model.");
+    let clean = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    const startIdx = clean.indexOf('{');
+    const endIdx = clean.lastIndexOf('}');
+    if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+      clean = clean.substring(startIdx, endIdx + 1);
+    }
+    const data = JSON.parse(clean);
+    if (!data.flashcards || !Array.isArray(data.flashcards)) {
+      throw new Error("Invalid response format: 'flashcards' array missing.");
+    }
+    return data.flashcards;
+  };
+
+  if (provider === "gemini") {
+    const model = getModel();
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "OBJECT",
+          properties: {
+            flashcards: {
+              type: "ARRAY",
+              items: {
+                type: "OBJECT",
+                properties: {
+                  id: { type: "INTEGER" },
+                  concept: { type: "STRING" },
+                  explanation: { type: "STRING" },
+                  keyTakeaway: { type: "STRING" }
+                },
+                required: ["id", "concept", "explanation", "keyTakeaway"]
+              }
+            }
+          },
+          required: ["flashcards"]
+        }
+      }
+    });
+
+    const responseText = result.response.text();
+    return parseJsonResponse(responseText);
+  } else {
+    const baseUrl = localStorage.getItem("edu-path-custom-base-url") || "https://opencode.ai/zen/v1";
+    const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
+
+    const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: customModel,
+        messages: [
+          { role: "system", content: "You are an educational flashcard generation assistant. Output valid JSON matching the schema." },
+          { role: "user", content: prompt }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.5
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      let parseErr;
+      try { parseErr = JSON.parse(errText); } catch {}
+      const errMsg = parseErr?.error?.message || errText || response.statusText;
+      throw new Error(`API Error (${response.status}): ${errMsg}`);
+    }
+
+    const data = await response.json();
+    const responseText = data.choices[0].message.content;
+    return parseJsonResponse(responseText);
+  }
+};
+
 export const evaluateAnswers = (questions, userAnswers) => {
   const results = questions.map((q) => {
     const isCorrect = userAnswers[q.id] === q.correctAnswerIndex;
