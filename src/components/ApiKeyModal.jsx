@@ -15,7 +15,7 @@ export default function ApiKeyModal({ isOpen, onClose, onSave }) {
       const storedProvider = localStorage.getItem('edu-path-api-provider') || 'gemini';
       const storedKey = localStorage.getItem('edu-path-api-key') || '';
       const storedBaseUrl = localStorage.getItem('edu-path-custom-base-url') || 'https://opencode.ai/zen/v1';
-      const storedModel = localStorage.getItem('edu-path-custom-model') || 'gemini-3.5-flash';
+      const storedModel = localStorage.getItem('edu-path-custom-model') || 'deepseek-v4-flash-free';
       
       setApiProvider(storedProvider);
       setApiKey(storedKey);
@@ -195,7 +195,7 @@ export default function ApiKeyModal({ isOpen, onClose, onSave }) {
                 <input
                   type="text"
                   className="input"
-                  placeholder="e.g. gemini-3.5-flash or custom model identifier"
+                  placeholder="e.g. deepseek-v4-flash-free or custom model identifier"
                   value={customModel}
                   onChange={(e) => {
                     setCustomModel(e.target.value);

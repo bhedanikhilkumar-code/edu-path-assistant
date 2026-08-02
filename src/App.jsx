@@ -27,8 +27,8 @@ export default function App() {
       localStorage.setItem('edu-path-custom-base-url', 'https://opencode.ai/zen/v1');
     }
 
-    if (provider === 'custom' && (!storedModel || storedModel === 'gemini-2.0-flash')) {
-      localStorage.setItem('edu-path-custom-model', 'gemini-3.5-flash');
+    if (provider === 'custom' && (!storedModel || storedModel === 'gemini-2.0-flash' || storedModel === 'gemini-3.5-flash')) {
+      localStorage.setItem('edu-path-custom-model', 'deepseek-v4-flash-free');
     }
   })();
 
