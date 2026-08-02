@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import MobileNav from './components/MobileNav';
@@ -8,104 +8,128 @@ import QuizModule from './components/QuizModule';
 import ApiKeyModal from './components/ApiKeyModal';
 import { initializeGemini } from './services/gemini';
 
-const API_KEY_STORAGE = 'edupath_gemini_key';
-const CONTEXT_STORAGE = 'edupath_context';
+const API_KEY_STORAGE = 'edu-path-api-key';
+const CONTEXT_STORAGE = 'edu-path-context';
+const HISTORY_STORAGE = 'edu-path-chat-history';
+const LANGUAGE_STORAGE = 'edu-path-language';
 
 export default function App() {
+  const [currentView, setCurrentView] = useState('context');
+  const [contextText, setContextText] = useState(() => localStorage.getItem(CONTEXT_STORAGE) || '');
   const [apiKey, setApiKey] = useState(() => localStorage.getItem(API_KEY_STORAGE) || '');
-  const [showApiModal, setShowApiModal] = useState(false);
-  const [activeView, setActiveView] = useState('context');
-  const [context, setContext] = useState(() => localStorage.getItem(CONTEXT_STORAGE) || '');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [language, setLanguage] = useState(() => localStorage.getItem(LANGUAGE_STORAGE) || 'English');
+  const [chatHistory, setChatHistory] = useState([]);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Initialize Gemini on load if key exists
+  // Load initial configurations from localStorage
   useEffect(() => {
+    const savedHistory = localStorage.getItem(HISTORY_STORAGE);
+    if (savedHistory) {
+      try {
+        setChatHistory(JSON.parse(savedHistory));
+      } catch (e) {
+        console.error('Error parsing chat history:', e);
+      }
+    }
+
     if (apiKey) {
       initializeGemini(apiKey);
     } else {
-      setShowApiModal(true);
+      setIsSettingsOpen(true);
     }
   }, [apiKey]);
 
-  const handleSaveApiKey = (key) => {
-    localStorage.setItem(API_KEY_STORAGE, key);
-    setApiKey(key);
-    initializeGemini(key);
-    setShowApiModal(false);
+  const handleSaveContext = (newContext) => {
+    setContextText(newContext);
+    localStorage.setItem(CONTEXT_STORAGE, newContext);
   };
 
-  const handleSaveContext = (text) => {
-    setContext(text);
-    if (text) {
-      localStorage.setItem(CONTEXT_STORAGE, text);
-    } else {
-      localStorage.removeItem(CONTEXT_STORAGE);
-    }
+  const handleSaveApiKey = (newKey) => {
+    setApiKey(newKey);
+    localStorage.setItem(API_KEY_STORAGE, newKey);
+    initializeGemini(newKey);
+    setIsSettingsOpen(false);
   };
 
-  const handleViewChange = (view) => {
-    setActiveView(view);
+  const handleChangeLanguage = (newLang) => {
+    setLanguage(newLang);
+    localStorage.setItem(LANGUAGE_STORAGE, newLang);
   };
 
-  const hasContext = context.trim().length > 0;
+  const handleAddMessage = (newMsg) => {
+    const updatedHistory = [...chatHistory, newMsg];
+    setChatHistory(updatedHistory);
+    localStorage.setItem(HISTORY_STORAGE, JSON.stringify(updatedHistory));
+  };
+
+  const handleClearHistory = () => {
+    setChatHistory([]);
+    localStorage.removeItem(HISTORY_STORAGE);
+  };
+
+  const hasContext = contextText.trim().length > 0;
 
   return (
-    <div className="app">
-      <Header onSettingsClick={() => setShowApiModal(true)} />
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', position: 'relative' }}>
+      {/* Header */}
+      <Header
+        onOpenSettings={() => setIsSettingsOpen(true)}
+        language={language}
+        onChangeLanguage={handleChangeLanguage}
+        hasKey={!!apiKey}
+      />
 
-      <div className="app-layout">
+      <div style={{ display: 'flex', flexGrow: 1, position: 'relative' }}>
+        {/* Sidebar */}
         <Sidebar
-          activeView={activeView}
-          onViewChange={handleViewChange}
+          currentView={currentView}
+          onViewChange={setCurrentView}
           hasContext={hasContext}
-          collapsed={sidebarCollapsed}
-          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
 
-        <main className="app-main">
-          {activeView === 'context' && (
-            <ContextPanel context={context} onSaveContext={handleSaveContext} />
+        {/* Main Content Area */}
+        <main style={{
+          flexGrow: 1,
+          padding: 'var(--space-6)',
+          overflowY: 'auto',
+          position: 'relative',
+          zIndex: 1,
+          maxWidth: '1200px',
+          margin: '0 auto',
+          width: '100%'
+        }}>
+          {currentView === 'context' && (
+            <ContextPanel
+              contextText={contextText}
+              onSaveContext={handleSaveContext}
+            />
           )}
-          {activeView === 'chat' && (
-            <ChatInterface context={context} />
+          {currentView === 'chat' && (
+            <ChatInterface
+              context={contextText}
+            />
           )}
-          {activeView === 'quiz' && (
-            <QuizModule context={context} />
+          {currentView === 'quiz' && (
+            <QuizModule
+              context={contextText}
+            />
           )}
         </main>
       </div>
 
+      {/* Mobile Navigation */}
       <MobileNav
-        activeView={activeView}
-        onViewChange={handleViewChange}
+        activeView={currentView}
+        onViewChange={setCurrentView}
         hasContext={hasContext}
       />
 
-      {showApiModal && (
-        <ApiKeyModal onSave={handleSaveApiKey} />
-      )}
-
-      <style>{`
-        .app {
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-        }
-        .app-layout {
-          display: flex;
-          flex: 1;
-        }
-        .app-main {
-          flex: 1;
-          min-width: 0;
-          overflow-y: auto;
-        }
-        @media (max-width: 768px) {
-          .app-main {
-            padding-bottom: 72px;
-          }
-        }
-      `}</style>
+      {/* Settings Modal */}
+      <ApiKeyModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        onSave={handleSaveApiKey}
+      />
     </div>
   );
 }

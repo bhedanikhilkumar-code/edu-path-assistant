@@ -20,13 +20,13 @@ The process is divided into two main stages:
   }
 ];
 
-export default function ContextPanel({ contextText, onSaveContext }) {
-  const [text, setText] = useState(contextText);
+export default function ContextPanel({ contextText = '', onSaveContext }) {
+  const [text, setText] = useState(contextText || '');
   const [isSaving, setIsSaving] = useState(false);
   const [showSavedAnimation, setShowSavedAnimation] = useState(false);
 
   useEffect(() => {
-    setText(contextText);
+    setText(contextText || '');
   }, [contextText]);
 
   const handleSave = () => {
