@@ -10,6 +10,8 @@ export default function QuizModule({ context }) {
   const [results, setResults] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
+  const [numQuestions, setNumQuestions] = useState(3);
+  const [difficulty, setDifficulty] = useState('Medium');
 
   const handleGenerate = async () => {
     if (!context || !context.trim()) {
@@ -24,7 +26,7 @@ export default function QuizModule({ context }) {
     setUserAnswers({});
 
     try {
-      const quiz = await generateQuiz(context);
+      const quiz = await generateQuiz(context, numQuestions, difficulty);
       setQuestions(quiz);
     } catch (err) {
       setError(getFriendlyErrorMessage(err));
@@ -42,6 +44,23 @@ export default function QuizModule({ context }) {
     if (!questions) return;
     const evalResults = evaluateAnswers(questions, userAnswers);
     setResults(evalResults);
+
+    // Save stats for Learning Analytics
+    try {
+      const stored = localStorage.getItem('edu-path-analytics');
+      const stats = stored ? JSON.parse(stored) : { totalQuizzes: 0, totalQuestions: 0, correctAnswers: 0, history: [] };
+      stats.totalQuizzes += 1;
+      stats.totalQuestions += evalResults.total;
+      stats.correctAnswers += evalResults.score;
+      stats.history.push({
+        date: new Date().toLocaleDateString(),
+        score: evalResults.score,
+        total: evalResults.total,
+        percentage: evalResults.percentage,
+        difficulty
+      });
+      localStorage.setItem('edu-path-analytics', JSON.stringify(stats));
+    } catch {}
   };
 
   const allAnswered = questions && Object.keys(userAnswers).length === questions.length;
@@ -54,11 +73,73 @@ export default function QuizModule({ context }) {
           <div className="quiz-start-icon">
             <BrainCircuit size={40} />
           </div>
-          <h2>Conceptual Quiz</h2>
-          <p>Test your understanding with AI-generated MCQs based on your course material.</p>
+          <h2>Conceptual Remedial Quiz</h2>
+          <p>Configure options and test your mastery with tailored AI MCQs.</p>
+
+          {/* Quiz Configuration Selectors */}
+          <div style={{
+            display: 'flex',
+            gap: 'var(--space-4)',
+            marginBottom: 'var(--space-6)',
+            flexWrap: 'wrap',
+            justify: 'center'
+          }}>
+            <div style={{ textAlign: 'left' }}>
+              <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px', fontWeight: '600' }}>
+                Question Count
+              </label>
+              <div style={{ display: 'flex', gap: '4px', background: 'rgba(0,0,0,0.2)', padding: '4px', borderRadius: 'var(--radius-md)' }}>
+                {[3, 5, 10].map((count) => (
+                  <button
+                    key={count}
+                    type="button"
+                    onClick={() => setNumQuestions(count)}
+                    className="btn"
+                    style={{
+                      padding: '4px 12px',
+                      fontSize: '12px',
+                      borderRadius: 'var(--radius-sm)',
+                      background: numQuestions === count ? 'var(--gradient-primary)' : 'transparent',
+                      color: numQuestions === count ? 'white' : 'var(--text-secondary)',
+                      border: 'none'
+                    }}
+                  >
+                    {count} Qs
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ textAlign: 'left' }}>
+              <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px', fontWeight: '600' }}>
+                Difficulty Level
+              </label>
+              <div style={{ display: 'flex', gap: '4px', background: 'rgba(0,0,0,0.2)', padding: '4px', borderRadius: 'var(--radius-md)' }}>
+                {['Easy', 'Medium', 'Hard'].map((diff) => (
+                  <button
+                    key={diff}
+                    type="button"
+                    onClick={() => setDifficulty(diff)}
+                    className="btn"
+                    style={{
+                      padding: '4px 12px',
+                      fontSize: '12px',
+                      borderRadius: 'var(--radius-sm)',
+                      background: difficulty === diff ? 'var(--gradient-primary)' : 'transparent',
+                      color: difficulty === diff ? 'white' : 'var(--text-secondary)',
+                      border: 'none'
+                    }}
+                  >
+                    {diff}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
           <button className="btn btn-primary quiz-generate-btn" onClick={handleGenerate}>
             <Sparkles size={18} />
-            Generate 3 Questions
+            Generate {numQuestions} ({difficulty}) Questions
           </button>
           {error && (
             <div className="quiz-error">

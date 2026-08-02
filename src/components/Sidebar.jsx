@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, MessageSquare, HelpCircle, Layers, Compass, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle } from 'lucide-react';
+import { BookOpen, MessageSquare, HelpCircle, Layers, Compass, BarChart3, ChevronLeft, ChevronRight, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function Sidebar({ currentView, onViewChange, hasContext }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -10,6 +10,7 @@ export default function Sidebar({ currentView, onViewChange, hasContext }) {
     { id: 'quiz', label: 'One-Click Quiz', icon: HelpCircle, description: 'Test your learning' },
     { id: 'flashcards', label: 'Revision Cards', icon: Layers, description: '3D Concept deck' },
     { id: 'roadmap', label: 'Study Roadmap', icon: Compass, description: 'Cheat sheet & plan' },
+    { id: 'analytics', label: 'Learning Analytics', icon: BarChart3, description: 'Progress & diagnosis' },
   ];
 
   return (

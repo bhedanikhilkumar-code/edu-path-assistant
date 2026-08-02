@@ -7,6 +7,7 @@ import ChatInterface from './components/ChatInterface';
 import QuizModule from './components/QuizModule';
 import FlashcardsModule from './components/FlashcardsModule';
 import StudyPlanModule from './components/StudyPlanModule';
+import AnalyticsModule from './components/AnalyticsModule';
 import ApiKeyModal from './components/ApiKeyModal';
 import { initializeGemini } from './services/gemini';
 
@@ -102,6 +103,11 @@ export default function App() {
           )}
           {currentView === 'roadmap' && (
             <StudyPlanModule
+              context={contextText}
+            />
+          )}
+          {currentView === 'analytics' && (
+            <AnalyticsModule
               context={contextText}
             />
           )}

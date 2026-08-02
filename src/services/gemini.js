@@ -88,7 +88,7 @@ ${question}
   }
 };
 
-export const generateQuiz = async (context) => {
+export const generateQuiz = async (context, numQuestions = 3, difficulty = "Medium") => {
   if (!context || !context.trim()) {
     throw new Error("Please add your course context or lecture notes in the 'Course Context' tab before generating a quiz.");
   }
@@ -97,12 +97,12 @@ export const generateQuiz = async (context) => {
   const apiKey = localStorage.getItem("edu-path-api-key") || "";
 
   const prompt = `
-Generate exactly 3 multiple choice questions (MCQs) to test understanding of the following educational context.
+Generate exactly ${numQuestions} multiple choice questions (MCQs) at a ${difficulty} difficulty level to test understanding of the following educational context.
 Each question must have exactly 4 choices, a correct answer index (0-based, 0 to 3), and a short helpful explanation.
 
 Return the response in a JSON object with a single root key "quizzes", which is an array of questions.
 Each question object in the "quizzes" array must contain:
-- "id": integer (0, 1, 2)
+- "id": integer (0 to ${numQuestions - 1})
 - "question": string
 - "options": array of exactly 4 strings
 - "correctAnswerIndex": integer (0 to 3)
