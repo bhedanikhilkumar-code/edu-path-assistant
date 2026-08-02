@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Lightbulb, AlertCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { askDoubt } from '../services/gemini';
+import { askDoubt, getFriendlyErrorMessage } from '../services/gemini';
 
 const SUGGESTED_QUESTIONS = [
   'Explain the main concept in simple terms',
@@ -39,7 +39,7 @@ export default function ChatInterface({ context, language }) {
       const response = await askDoubt(context, text.trim(), language);
       setMessages((prev) => [...prev, { role: 'assistant', content: response }]);
     } catch (err) {
-      setError(err.message || 'Something went wrong. Please try again.');
+      setError(getFriendlyErrorMessage(err));
     } finally {
       setIsLoading(false);
       inputRef.current?.focus();

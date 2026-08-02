@@ -120,3 +120,27 @@ export const evaluateAnswers = (questions, userAnswers) => {
     percentage
   };
 };
+
+export const getFriendlyErrorMessage = (error) => {
+  if (!error) return 'An unknown error occurred. Please try again.';
+  
+  const msg = error.message || String(error);
+  
+  if (msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('429') || msg.includes('Limit')) {
+    return 'API Quota/Rate Limit Exceeded. The free tier limits how frequently you can call the model. Please wait a few seconds and click try again, or configure a different Gemini API key.';
+  }
+  
+  if (msg.includes('API_KEY_INVALID') || msg.includes('API key not valid') || msg.includes('key is invalid') || msg.includes('invalid api key')) {
+    return 'Invalid API Key. Please click the settings icon in the top right and verify your Gemini API key.';
+  }
+
+  if (msg.includes('safety') || msg.includes('blocked')) {
+    return 'Content blocked. The query or generated response triggered safety filters. Please try rephrasing your prompt.';
+  }
+
+  if (msg.includes('Failed to fetch') || msg.includes('network') || msg.includes('Network')) {
+    return 'Network Error. Could not connect to Gemini API. Please check your internet connection.';
+  }
+
+  return msg;
+};

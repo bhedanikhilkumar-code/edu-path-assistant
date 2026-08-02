@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { BrainCircuit, Loader2, RefreshCw, CheckCircle2, XCircle, Trophy, ChevronRight, Sparkles } from 'lucide-react';
-import { generateQuiz, evaluateAnswers } from '../services/gemini';
+import { generateQuiz, evaluateAnswers, getFriendlyErrorMessage } from '../services/gemini';
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D'];
 
@@ -22,7 +22,7 @@ export default function QuizModule({ context }) {
       const quiz = await generateQuiz(context);
       setQuestions(quiz);
     } catch (err) {
-      setError(err.message || 'Failed to generate quiz. Please try again.');
+      setError(getFriendlyErrorMessage(err));
     } finally {
       setIsGenerating(false);
     }
