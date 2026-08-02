@@ -82,7 +82,7 @@ export default function QuizModule({ context }) {
             gap: 'var(--space-4)',
             marginBottom: 'var(--space-6)',
             flexWrap: 'wrap',
-            justify: 'center'
+            justifyContent: 'center'
           }}>
             <div style={{ textAlign: 'left' }}>
               <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-secondary)', marginBottom: '4px', fontWeight: '600' }}>

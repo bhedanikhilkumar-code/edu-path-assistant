@@ -65,7 +65,7 @@ export default function ContextPanel({ contextText = '', onSaveContext }) {
           borderRadius: 'var(--radius-md)',
           display: 'flex',
           alignItems: 'center',
-          justify-content: 'center',
+          justifyContent: 'center',
           flexShrink: 0
         }}>
           <BookOpen size={24} color="white" />
@@ -143,7 +143,6 @@ export default function ContextPanel({ contextText = '', onSaveContext }) {
               )}
             </button>
           </div>
-        </div>
         </div>
 
         {/* Demo Content Sidebar */}

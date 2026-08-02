@@ -1,4 +1,4 @@
-import { BookOpen, MessageCircle, BrainCircuit, Layers, Compass, BarChart3 } from 'lucide-react';
+import { BookOpen, MessageCircle, BrainCircuit, Layers, Compass, Network, BarChart3 } from 'lucide-react';
 
 const navItems = [
   { id: 'context', label: 'Context', icon: BookOpen },
@@ -6,6 +6,7 @@ const navItems = [
   { id: 'quiz', label: 'Quiz', icon: BrainCircuit },
   { id: 'flashcards', label: 'Cards', icon: Layers },
   { id: 'roadmap', label: 'Roadmap', icon: Compass },
+  { id: 'mindmap', label: 'MindMap', icon: Network },
   { id: 'analytics', label: 'Stats', icon: BarChart3 },
 ];
 

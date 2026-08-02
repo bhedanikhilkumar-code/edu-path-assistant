@@ -421,6 +421,109 @@ ${context}
   }
 };
 
+export const generateMindMap = async (context) => {
+  if (!context || !context.trim()) {
+    throw new Error("Please add your course context or lecture notes in the 'Course Context' tab before generating a mind map.");
+  }
+
+  const provider = localStorage.getItem("edu-path-api-provider") || "gemini";
+  const apiKey = localStorage.getItem("edu-path-api-key") || "";
+
+  const prompt = `
+Analyze the following educational context and build a structured visual Mind Map breakdown.
+
+Return the response in a JSON object containing:
+- "rootTopic": string (The central subject/topic name)
+- "branches": array of 3-4 objects, each containing:
+  - "name": string (Sub-category title)
+  - "description": string (One sentence overview of this sub-category)
+  - "nodes": array of 3-4 strings (Key terms, principles, or concepts belonging to this sub-category)
+
+Context:
+${context}
+`;
+
+  const parseJsonResponse = (text) => {
+    if (!text) throw new Error("Empty response received from AI model.");
+    let clean = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    const startIdx = clean.indexOf('{');
+    const endIdx = clean.lastIndexOf('}');
+    if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+      clean = clean.substring(startIdx, endIdx + 1);
+    }
+    const data = JSON.parse(clean);
+    if (!data.rootTopic || !Array.isArray(data.branches)) {
+      throw new Error("Invalid response format: Missing mind map fields.");
+    }
+    return data;
+  };
+
+  if (provider === "gemini") {
+    const model = getModel();
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "OBJECT",
+          properties: {
+            rootTopic: { type: "STRING" },
+            branches: {
+              type: "ARRAY",
+              items: {
+                type: "OBJECT",
+                properties: {
+                  name: { type: "STRING" },
+                  description: { type: "STRING" },
+                  nodes: { type: "ARRAY", items: { type: "STRING" } }
+                },
+                required: ["name", "description", "nodes"]
+              }
+            }
+          },
+          required: ["rootTopic", "branches"]
+        }
+      }
+    });
+
+    const responseText = result.response.text();
+    return parseJsonResponse(responseText);
+  } else {
+    const baseUrl = localStorage.getItem("edu-path-custom-base-url") || "https://opencode.ai/zen/v1";
+    const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
+
+    const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: customModel,
+        messages: [
+          { role: "system", content: "You are an educational mind map generator assistant. Output valid JSON matching the schema." },
+          { role: "user", content: prompt }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.5
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      let parseErr;
+      try { parseErr = JSON.parse(errText); } catch {}
+      const errMsg = parseErr?.error?.message || errText || response.statusText;
+      throw new Error(`API Error (${response.status}): ${errMsg}`);
+    }
+
+    const data = await response.json();
+    const responseText = data.choices[0].message.content;
+    return parseJsonResponse(responseText);
+  }
+};
+
 export const evaluateAnswers = (questions, userAnswers) => {
   const results = questions.map((q) => {
     const isCorrect = userAnswers[q.id] === q.correctAnswerIndex;

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Lightbulb, AlertCircle, Volume2, VolumeX, Copy, Check } from 'lucide-react';
+import { Send, Bot, User, Lightbulb, AlertCircle, Volume2, VolumeX, Copy, Check, Mic, MicOff, Download, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { askDoubt, getFriendlyErrorMessage } from '../services/gemini';
 
@@ -11,14 +11,30 @@ const SUGGESTED_QUESTIONS = [
 ];
 
 export default function ChatInterface({ context, language }) {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(() => {
+    try {
+      const saved = localStorage.getItem('edu-path-chat-history');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [speakingIndex, setSpeakingIndex] = useState(null);
   const [copiedIndex, setCopiedIndex] = useState(null);
+  const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const recognitionRef = useRef(null);
+
+  // Save chat to localStorage on change
+  useEffect(() => {
+    try {
+      localStorage.setItem('edu-path-chat-history', JSON.stringify(messages));
+    } catch {}
+  }, [messages]);
 
   const handleCopy = (content, index) => {
     navigator.clipboard.writeText(content);
@@ -41,6 +57,58 @@ export default function ChatInterface({ context, language }) {
     utterance.onerror = () => setSpeakingIndex(null);
     setSpeakingIndex(index);
     window.speechSynthesis.speak(utterance);
+  };
+
+  const toggleVoiceInput = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice input is not supported in your browser. Please use Google Chrome or Microsoft Edge.");
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = language === "Hinglish" ? "hi-IN" : "en-US";
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map((r) => r[0].transcript)
+        .join('');
+      setInput(transcript);
+    };
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
+
+  const handleClearChat = () => {
+    setMessages([]);
+    localStorage.removeItem('edu-path-chat-history');
+  };
+
+  const handleExportChat = () => {
+    if (messages.length === 0) return;
+    let md = `# 🎓 Edu-Path Doubt Resolution History\n\n`;
+    messages.forEach((m) => {
+      md += `### ${m.role === 'user' ? '🧑‍🎓 Student' : '🤖 AI Remedial Tutor'}\n${m.content}\n\n---\n\n`;
+    });
+    const blob = new Blob([md], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `edu-path-chat-${new Date().toISOString().slice(0, 10)}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const scrollToBottom = () => {
@@ -82,6 +150,41 @@ export default function ChatInterface({ context, language }) {
 
   return (
     <div className="chat-interface animate-fade-in">
+      {/* Top Action Bar */}
+      {messages.length > 0 && (
+        <div style={{
+          display: 'flex',
+          justify: 'space-between',
+          alignItems: 'center',
+          padding: 'var(--space-2) var(--space-4)',
+          borderBottom: '1px solid var(--surface-border)',
+          background: 'rgba(0,0,0,0.15)',
+          fontSize: 'var(--font-xs)'
+        }}>
+          <span style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>
+            {messages.length} messages in conversation
+          </span>
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <button
+              className="btn btn-ghost"
+              onClick={handleExportChat}
+              title="Export chat history as Markdown (.md)"
+              style={{ padding: '4px 8px', fontSize: '11px' }}
+            >
+              <Download size={12} /> Export Chat
+            </button>
+            <button
+              className="btn btn-ghost"
+              onClick={handleClearChat}
+              title="Clear chat history"
+              style={{ padding: '4px 8px', fontSize: '11px', color: 'var(--accent-rose)' }}
+            >
+              <Trash2 size={12} /> Clear
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="chat-messages">
         {messages.length === 0 && !isLoading && (
           <div className="chat-empty">
@@ -172,11 +275,21 @@ export default function ChatInterface({ context, language }) {
       </div>
 
       <form className="chat-input-bar" onSubmit={handleSubmit}>
+        <button
+          type="button"
+          className={`btn btn-ghost btn-icon ${isListening ? 'listening-pulse' : ''}`}
+          onClick={toggleVoiceInput}
+          title={isListening ? "Stop listening" : "Speak doubt (Voice Input)"}
+          style={{ color: isListening ? 'var(--accent-rose)' : 'var(--text-secondary)' }}
+        >
+          {isListening ? <MicOff size={20} /> : <Mic size={20} />}
+        </button>
+
         <input
           ref={inputRef}
           type="text"
           className="input chat-input"
-          placeholder="Ask your doubt here..."
+          placeholder={isListening ? "Listening to your voice..." : "Ask your doubt here (or click microphone to speak)..."}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={isLoading}
@@ -385,6 +498,14 @@ export default function ChatInterface({ context, language }) {
           height: 48px;
           border-radius: var(--radius-lg);
           flex-shrink: 0;
+        }
+        .listening-pulse {
+          animation: pulseRed 1.2s infinite;
+        }
+        @keyframes pulseRed {
+          0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.4); }
+          70% { transform: scale(1.08); box-shadow: 0 0 0 10px rgba(244, 63, 94, 0); }
+          100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
         }
       `}</style>
     </div>
