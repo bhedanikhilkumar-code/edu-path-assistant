@@ -53,7 +53,7 @@ ${question}
     return result.response.text();
   } else {
     // Custom OpenAI-compatible / Proxy (e.g. OpenCode Zen)
-    const baseUrl = localStorage.getItem("edu-path-custom-base-url") || "https://api.opencode.ai/v1";
+    const baseUrl = localStorage.getItem("edu-path-custom-base-url") || "https://opencode.ai/zen/v1";
     const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
 
     const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
@@ -146,7 +146,7 @@ ${context}
     return data.quizzes;
   } else {
     // Custom OpenAI-compatible / Proxy (e.g. OpenCode Zen)
-    const baseUrl = localStorage.getItem("edu-path-custom-base-url") || "https://api.opencode.ai/v1";
+    const baseUrl = localStorage.getItem("edu-path-custom-base-url") || "https://opencode.ai/zen/v1";
     const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
 
     const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;

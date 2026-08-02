@@ -14,7 +14,7 @@ export default function ApiKeyModal({ isOpen, onClose, onSave }) {
     if (isOpen) {
       const storedProvider = localStorage.getItem('edu-path-api-provider') || 'gemini';
       const storedKey = localStorage.getItem('edu-path-api-key') || '';
-      const storedBaseUrl = localStorage.getItem('edu-path-custom-base-url') || 'https://api.opencode.ai/v1';
+      const storedBaseUrl = localStorage.getItem('edu-path-custom-base-url') || 'https://opencode.ai/zen/v1';
       const storedModel = localStorage.getItem('edu-path-custom-model') || 'gemini-2.0-flash';
       
       setApiProvider(storedProvider);
@@ -181,7 +181,7 @@ export default function ApiKeyModal({ isOpen, onClose, onSave }) {
                 <input
                   type="text"
                   className="input"
-                  placeholder="e.g. https://api.opencode.ai/v1"
+                  placeholder="e.g. https://opencode.ai/zen/v1"
                   value={customBaseUrl}
                   onChange={(e) => {
                     setCustomBaseUrl(e.target.value);
