@@ -75,7 +75,7 @@ ${question}
   } else {
     // Custom OpenAI-compatible / Proxy (e.g. OpenCode Zen)
     const baseUrl = localStorage.getItem("edu-path-custom-base-url") || "https://opencode.ai/zen/v1";
-    const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
+    const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-3.5-flash";
 
     const url = `${baseUrl.replace(/\/$/, "").replace(/\/chat\/completions$/, "")}/chat/completions`;
     const response = await customFetch(url, {
@@ -186,7 +186,7 @@ ${context}
   } else {
     // Custom OpenAI-compatible / Proxy (e.g. OpenCode Zen)
     const baseUrl = localStorage.getItem("edu-path-custom-base-url") || "https://opencode.ai/zen/v1";
-    const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
+    const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-3.5-flash";
 
     const url = `${baseUrl.replace(/\/$/, "").replace(/\/chat\/completions$/, "")}/chat/completions`;
     const response = await customFetch(url, {
@@ -292,7 +292,7 @@ ${context}
     return parseJsonResponse(responseText);
   } else {
     const baseUrl = localStorage.getItem("edu-path-custom-base-url") || "https://opencode.ai/zen/v1";
-    const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
+    const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-3.5-flash";
 
     const url = `${baseUrl.replace(/\/$/, "").replace(/\/chat\/completions$/, "")}/chat/completions`;
     const response = await customFetch(url, {
@@ -408,7 +408,7 @@ ${context}
     return parseJsonResponse(responseText);
   } else {
     const baseUrl = localStorage.getItem("edu-path-custom-base-url") || "https://opencode.ai/zen/v1";
-    const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
+    const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-3.5-flash";
 
     const url = `${baseUrl.replace(/\/$/, "").replace(/\/chat\/completions$/, "")}/chat/completions`;
     const response = await customFetch(url, {
@@ -511,7 +511,7 @@ ${context}
     return parseJsonResponse(responseText);
   } else {
     const baseUrl = localStorage.getItem("edu-path-custom-base-url") || "https://opencode.ai/zen/v1";
-    const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
+    const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-3.5-flash";
 
     const url = `${baseUrl.replace(/\/$/, "").replace(/\/chat\/completions$/, "")}/chat/completions`;
     const response = await customFetch(url, {

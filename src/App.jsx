@@ -17,6 +17,21 @@ const CONTEXT_STORAGE = 'edu-path-context';
 const LANGUAGE_STORAGE = 'edu-path-language';
 
 export default function App() {
+  // Run storage migrations synchronously before state initialization
+  (() => {
+    const provider = localStorage.getItem('edu-path-api-provider');
+    const storedBase = localStorage.getItem('edu-path-custom-base-url');
+    const storedModel = localStorage.getItem('edu-path-custom-model');
+
+    if (storedBase === 'https://api.opencode.ai/v1') {
+      localStorage.setItem('edu-path-custom-base-url', 'https://opencode.ai/zen/v1');
+    }
+
+    if (provider === 'custom' && (!storedModel || storedModel === 'gemini-2.0-flash')) {
+      localStorage.setItem('edu-path-custom-model', 'gemini-3.5-flash');
+    }
+  })();
+
   const [currentView, setCurrentView] = useState('context');
   const [contextText, setContextText] = useState(() => localStorage.getItem(CONTEXT_STORAGE) || '');
   const [apiKey, setApiKey] = useState(() => localStorage.getItem(API_KEY_STORAGE) || '');
