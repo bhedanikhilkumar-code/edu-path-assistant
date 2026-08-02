@@ -25,6 +25,27 @@ const getModel = (modelName = "gemini-2.0-flash", systemInstruction) => {
   return genAI.getGenerativeModel(config);
 };
 
+const customFetch = async (url, options) => {
+  const isLocal = url.includes("localhost") || url.includes("127.0.0.1") || url.includes("192.168.") || url.includes("10.");
+  const isVercel = window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1";
+  
+  if (isVercel && !isLocal) {
+    return await fetch("/api/proxy", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": options.headers["Authorization"] || options.headers["authorization"] || ""
+      },
+      body: JSON.stringify({
+        url: url,
+        body: JSON.parse(options.body || "{}")
+      })
+    });
+  } else {
+    return await fetch(url, options);
+  }
+};
+
 export const askDoubt = async (context, question, language = "English") => {
   const provider = localStorage.getItem("edu-path-api-provider") || "gemini";
   const apiKey = localStorage.getItem("edu-path-api-key") || "";
@@ -57,7 +78,7 @@ ${question}
     const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
 
     const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
-    const response = await fetch(url, {
+    const response = await customFetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -168,7 +189,7 @@ ${context}
     const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
 
     const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
-    const response = await fetch(url, {
+    const response = await customFetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -274,7 +295,7 @@ ${context}
     const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
 
     const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
-    const response = await fetch(url, {
+    const response = await customFetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -390,7 +411,7 @@ ${context}
     const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
 
     const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
-    const response = await fetch(url, {
+    const response = await customFetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -493,7 +514,7 @@ ${context}
     const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
 
     const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
-    const response = await fetch(url, {
+    const response = await customFetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
