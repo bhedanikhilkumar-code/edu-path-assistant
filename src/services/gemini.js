@@ -77,7 +77,7 @@ ${question}
     const baseUrl = localStorage.getItem("edu-path-custom-base-url") || "https://opencode.ai/zen/v1";
     const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
 
-    const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
+    const url = `${baseUrl.replace(/\/$/, "").replace(/\/chat\/completions$/, "")}/chat/completions`;
     const response = await customFetch(url, {
       method: "POST",
       headers: {
@@ -188,7 +188,7 @@ ${context}
     const baseUrl = localStorage.getItem("edu-path-custom-base-url") || "https://opencode.ai/zen/v1";
     const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
 
-    const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
+    const url = `${baseUrl.replace(/\/$/, "").replace(/\/chat\/completions$/, "")}/chat/completions`;
     const response = await customFetch(url, {
       method: "POST",
       headers: {
@@ -294,7 +294,7 @@ ${context}
     const baseUrl = localStorage.getItem("edu-path-custom-base-url") || "https://opencode.ai/zen/v1";
     const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
 
-    const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
+    const url = `${baseUrl.replace(/\/$/, "").replace(/\/chat\/completions$/, "")}/chat/completions`;
     const response = await customFetch(url, {
       method: "POST",
       headers: {
@@ -410,7 +410,7 @@ ${context}
     const baseUrl = localStorage.getItem("edu-path-custom-base-url") || "https://opencode.ai/zen/v1";
     const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
 
-    const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
+    const url = `${baseUrl.replace(/\/$/, "").replace(/\/chat\/completions$/, "")}/chat/completions`;
     const response = await customFetch(url, {
       method: "POST",
       headers: {
@@ -513,7 +513,7 @@ ${context}
     const baseUrl = localStorage.getItem("edu-path-custom-base-url") || "https://opencode.ai/zen/v1";
     const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
 
-    const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
+    const url = `${baseUrl.replace(/\/$/, "").replace(/\/chat\/completions$/, "")}/chat/completions`;
     const response = await customFetch(url, {
       method: "POST",
       headers: {
@@ -584,6 +584,10 @@ export const getFriendlyErrorMessage = (error) => {
 
   if (msg.includes('safety') || msg.includes('blocked')) {
     return 'Content blocked. The query or generated response triggered safety filters. Please try rephrasing your prompt.';
+  }
+
+  if (msg.includes('JSON') || msg.includes('Unexpected token') || msg.includes('Not Found') || msg.includes('404')) {
+    return 'API Endpoint Error (404 Not Found). The configured Base URL / API Endpoint is incorrect or not supported by the custom provider. Please click the settings icon in the top right and verify your Base URL.';
   }
 
   if (msg.includes('Failed to fetch') || msg.includes('network') || msg.includes('Network')) {
