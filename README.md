@@ -1,74 +1,164 @@
-# 🎓 Edu-Path — AI-Powered Learning Assistant
+# 🎓 Edu-Path — AI-Powered Remedial Learning Assistant
 
-> Hyper-personalized MOOC remedial assistant powered by Google Gemini AI
+<p align="center">
+  <b>Hyper-personalized MOOC Remedial Assistant powered by Google Gemini AI</b>
+</p>
 
-Edu-Path is an intelligent learning assistant that helps online students understand course materials better through AI-driven doubt resolution and conceptual quizzes.
+<p align="center">
+  <img src="https://img.shields.io/badge/React-19.1-blue?logo=react&logoColor=61DAFB" alt="React 19" />
+  <img src="https://img.shields.io/badge/Vite-6.3-646CFF?logo=vite&logoColor=white" alt="Vite" />
+  <img src="https://img.shields.io/badge/AI Engine-Gemini 2.0 Flash-8E44AD?logo=google&logoColor=white" alt="Gemini AI" />
+  <img src="https://img.shields.io/badge/UI Theme-Glassmorphism Dark-00C9FF" alt="Glassmorphism UI" />
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License MIT" />
+</p>
 
-## ✨ Features
+---
 
-### 📖 Context/Syllabus Ingestion
-Paste your chapter text, lecture transcript, or study notes — Edu-Path uses it as the knowledge base for all interactions.
+## 📌 Executive Summary
 
-### 💬 Doubt Resolution Chatbot
-Ask questions about your course material and get easy, step-by-step explanations in conversational language.
+Online Massive Open Online Courses (MOOCs) often suffer from high dropout rates because learners get stuck on complex concepts without real-time, tailored assistance. **Edu-Path** bridges this gap by acting as an intelligent 24/7 personal remedial tutor. 
 
-### 🧠 One-Click Conceptual Quiz
-Generate 3 AI-crafted MCQs instantly. Get detailed feedback on your answers with explanations.
+Learners upload or paste their exact course syllabus, lecture transcripts, or study notes. Edu-Path then provides **context-aware doubt resolution** and **instant conceptual MCQs** to test and strengthen understanding in real time.
 
-## 🚀 Quick Start
+---
+
+## 🌟 Key Features
+
+| Feature | Description |
+|---|---|
+| 📄 **Context Ingestion Engine** | Paste course chapters, transcripts, or notes. Edu-Path anchors all AI responses strictly to your material. |
+| 💬 **AI Remedial Doubt Solver** | Ask questions and receive step-by-step, simple explanations with Hinglish & English language support. |
+| 🧠 **One-Click MCQ Quiz Generator** | Generate instant multi-choice quizzes based on your course material with instant scoring & explanations. |
+| 🌐 **Hinglish & Multi-Lang Mode** | Learner-friendly Hinglish responses ("*Ye topic samajhne ke liye...*") lower cognitive barriers for fast learning. |
+| 🛡️ **Privacy & Client Storage** | API keys and context data remain safely stored in local browser storage (`localStorage`). |
+| 💎 **Glassmorphism Dark UI** | Sleek, modern, and responsive user interface crafted with dynamic glassmorphism design. |
+
+---
+
+## 🏗️ System Architecture & Workflow
+
+```
+ ┌─────────────────────────────────────────────────────────────┐
+ │                      Learner Interface                      │
+ └──────────────────────────────┬──────────────────────────────┘
+                                │
+                    [1. Paste Study Material]
+                                │
+                                ▼
+ ┌─────────────────────────────────────────────────────────────┐
+ │                   Local Context Engine                      │
+ │       (Stores context & API keys in Browser Storage)        │
+ └──────────────────────────────┬──────────────────────────────┘
+                                │
+                 [2. Query / Generate Quiz]
+                                │
+                                ▼
+ ┌─────────────────────────────────────────────────────────────┐
+ │             Google Gemini 2.0 Flash Integration             │
+ │        (Generates tailored remedial answers & MCQs)         │
+ └──────────────────────────────┬──────────────────────────────┘
+                                │
+                     [3. Dynamic Rendering]
+                                │
+                                ▼
+ ┌─────────────────────────────────────────────────────────────┐
+ │              Remedial Output & Interactive Quiz             │
+ └─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🛠️ Tech Stack & Architecture
+
+- **Frontend Core:** React 19, JSX, ES Modules
+- **Build Tool:** Vite 6
+- **AI Integration:** `@google/generative-ai` (Gemini 2.0 Flash)
+- **Icons:** `lucide-react`
+- **Markdown Processing:** `react-markdown`
+- **Styling:** Vanilla CSS with custom properties (Glassmorphism Dark Theme)
+
+---
+
+## ⚡ Quick Start Guide
 
 ### Prerequisites
-- Node.js 18+
-- A [Gemini API key](https://aistudio.google.com/app/apikey) (free tier available)
+- **Node.js**: v18.0.0 or higher
+- **npm**: v9.0.0 or higher
+- **Gemini API Key**: Obtain a free API Key from [Google AI Studio](https://aistudio.google.com/app/apikey).
 
-### Installation
+### Installation & Setup
 
-```bash
-# Install dependencies
-npm install
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/your-username/edu-path.git
+   cd edu-path
+   ```
 
-# Start development server
-npm run dev
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Start the local development server:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Access the application:**
+   Open your browser and navigate to `http://localhost:5173`.
+   On first load, enter your **Gemini API Key** in the settings modal.
+
+---
+
+## 📂 Project Directory Structure
+
+```
+Edu-Path/
+├── public/                 # Static assets
+├── src/
+│   ├── components/         # Modular React components
+│   │   ├── ApiKeyModal.jsx # API Key setup modal
+│   │   ├── ChatInterface.jsx # AI doubt-clearing chat
+│   │   ├── ContextPanel.jsx # Course content ingestion form
+│   │   ├── Header.jsx      # Navigation header with settings & language selector
+│   │   ├── MobileNav.jsx   # Responsive mobile bottom navigation bar
+│   │   ├── QuizModule.jsx  # Interactive MCQ quiz generator & evaluator
+│   │   └── Sidebar.jsx     # Desktop sidebar navigation
+│   ├── services/
+│   │   └── gemini.js       # Gemini API client integration & prompt engineering
+│   ├── App.jsx             # Main application state & routing controller
+│   ├── index.css           # Glassmorphism design tokens & global CSS
+│   └── main.jsx            # Application entry point
+├── package.json            # Project dependencies & scripts
+├── vite.config.js          # Vite configuration
+└── README.md               # Documentation
 ```
 
-The app will open at `http://localhost:5173`. On first launch, you'll be prompted to enter your Gemini API key.
+---
 
-## 🛠️ Tech Stack
+## 💡 How It Works (Step-by-Step)
 
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | React 19 + Vite |
-| **AI Engine** | Google Gemini 2.0 Flash |
-| **Styling** | Vanilla CSS (Glassmorphism dark theme) |
-| **Icons** | Lucide React |
-| **Markdown** | react-markdown |
+1. **Step 1: Input Course Context** — Paste your lecture notes, textbook excerpt, or topic outline into the **Context Panel**.
+2. **Step 2: Ask Doubts in Chat** — Head over to the **Remedial Chat** tab. Ask any confusing question in English or Hinglish.
+3. **Step 3: Evaluate Understanding** — Switch to **Quiz Module** and click **Generate Quiz**. Answer the 3 tailored MCQs to check your mastery.
 
-## 📁 Project Structure
+---
 
-```
-src/
-├── components/
-│   ├── ApiKeyModal.jsx   # API key input modal
-│   ├── Header.jsx        # App header with branding
-│   ├── Sidebar.jsx       # Desktop navigation sidebar
-│   ├── MobileNav.jsx     # Mobile bottom navigation
-│   ├── ContextPanel.jsx  # Course material input
-│   ├── ChatInterface.jsx # AI doubt resolution chat
-│   └── QuizModule.jsx    # MCQ quiz generation
-├── services/
-│   └── gemini.js         # Gemini API integration
-├── App.jsx               # Main application
-├── index.css             # Design system & global styles
-└── main.jsx              # Entry point
-```
+## 🔮 Future Roadmap
 
-## 🔮 Future Scope
+- 🎥 **Multimodal Support**: Direct ingestion of PDF textbooks, lecture audio, and YouTube video links.
+- 📊 **Learning Analytics Dashboard**: Track weak concepts and progress history over time.
+- 📅 **AI Study Planner**: Generate customized daily remedial review schedules based on quiz results.
+- 🔊 **Voice Tutor**: Audio-based Q&A interactions for hands-free learning.
 
-- **Multimodal Support**: Upload lecture videos and PDFs directly
-- **Progress Dashboard**: Track weak/strong topics over time
-- **Remedial Study Plans**: AI-generated personalized weekly timetables
-- **Multi-language Support**: Learn in your preferred language
+---
 
-## 📄 License
+## 📜 License
 
-MIT
+Distributed under the **MIT License**.
+
+---
+
+<p align="center">
+  Crafted with ❤️ for accessible, intelligent, and personalized learning.
+</p>

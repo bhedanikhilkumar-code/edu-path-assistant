@@ -78,7 +78,7 @@ ${question}
       let parseErr;
       try {
         parseErr = JSON.parse(errText);
-      } catch (e) {}
+      } catch {}
       const errMsg = parseErr?.error?.message || errText || response.statusText;
       throw new Error(`API Error (${response.status}): ${errMsg}`);
     }
@@ -172,7 +172,7 @@ ${context}
       let parseErr;
       try {
         parseErr = JSON.parse(errText);
-      } catch (e) {}
+      } catch {}
       const errMsg = parseErr?.error?.message || errText || response.statusText;
       throw new Error(`API Error (${response.status}): ${errMsg}`);
     }
