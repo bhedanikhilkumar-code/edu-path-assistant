@@ -1,12 +1,12 @@
 import React from 'react';
-import { Settings, Key, Globe, Sparkles } from 'lucide-react';
+import { Settings, Key, Globe, Sparkles, Sun, Moon } from 'lucide-react';
 
-export default function Header({ onOpenSettings, language, onChangeLanguage, hasKey }) {
+export default function Header({ onOpenSettings, language, onChangeLanguage, hasKey, theme, onToggleTheme }) {
   return (
     <header style={{
       height: 'var(--header-height)',
       borderBottom: '1px solid var(--surface-border)',
-      background: 'rgba(10, 10, 26, 0.4)',
+      background: 'var(--bg-header, rgba(10, 10, 26, 0.4))',
       backdropFilter: 'blur(20px)',
       display: 'flex',
       alignItems: 'center',
@@ -81,11 +81,30 @@ export default function Header({ onOpenSettings, language, onChangeLanguage, has
               WebkitAppearance: 'none'
             }}
           >
-            <option value="English" style={{ background: 'var(--bg-secondary)', color: 'white' }}>English</option>
-            <option value="Hinglish" style={{ background: 'var(--bg-secondary)', color: 'white' }}>Hinglish (mix)</option>
-            <option value="Hindi" style={{ background: 'var(--bg-secondary)', color: 'white' }}>Hindi (हिंदी)</option>
+            <option value="English" style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>English</option>
+            <option value="Hinglish" style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>Hinglish (mix)</option>
+            <option value="Hindi" style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>Hindi (हिंदी)</option>
           </select>
         </div>
+
+        {/* Theme Toggle */}
+        <button
+          onClick={onToggleTheme}
+          className="btn btn-ghost"
+          style={{
+            width: '34px',
+            height: '34px',
+            borderRadius: 'var(--radius-sm)',
+            padding: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--text-secondary)'
+          }}
+          title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+        </button>
 
         {/* API Key Status Indicator */}
         <button

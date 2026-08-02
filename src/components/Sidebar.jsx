@@ -19,7 +19,7 @@ export default function Sidebar({ currentView, onViewChange, hasContext }) {
       width: isCollapsed ? 'var(--sidebar-collapsed)' : 'var(--sidebar-width)',
       height: 'calc(100vh - var(--header-height))',
       borderRight: '1px solid var(--surface-border)',
-      background: 'rgba(15, 14, 36, 0.6)',
+      background: 'var(--bg-sidebar, rgba(15, 14, 36, 0.6))',
       backdropFilter: 'blur(20px)',
       display: 'flex',
       flexDirection: 'column',

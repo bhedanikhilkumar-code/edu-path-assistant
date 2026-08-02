@@ -22,6 +22,19 @@ export default function App() {
   const [apiKey, setApiKey] = useState(() => localStorage.getItem(API_KEY_STORAGE) || '');
   const [language, setLanguage] = useState(() => localStorage.getItem(LANGUAGE_STORAGE) || 'English');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('edu-path-theme') || 'dark';
+  });
+
+  // Handle HTML document attribute for dark/light mode
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('edu-path-theme', theme);
+  }, [theme]);
+
+  const handleToggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
 
   // Initialize Gemini on mount / key change
   useEffect(() => {
@@ -59,6 +72,8 @@ export default function App() {
         language={language}
         onChangeLanguage={handleChangeLanguage}
         hasKey={!!apiKey}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
       />
 
       <div style={{ display: 'flex', flexGrow: 1, position: 'relative' }}>
