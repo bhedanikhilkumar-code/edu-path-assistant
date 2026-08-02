@@ -305,6 +305,122 @@ ${context}
   }
 };
 
+export const generateStudyPlan = async (context) => {
+  if (!context || !context.trim()) {
+    throw new Error("Please add your course context or lecture notes in the 'Course Context' tab before generating a study plan.");
+  }
+
+  const provider = localStorage.getItem("edu-path-api-provider") || "gemini";
+  const apiKey = localStorage.getItem("edu-path-api-key") || "";
+
+  const prompt = `
+Analyze the following educational context and generate a comprehensive Remedial Study Plan & Cheat Sheet.
+
+Return the response in a JSON object containing:
+- "topicTitle": string (A concise title summarizing the course material)
+- "summaryPoints": array of 4-5 strings (Core concepts & main takeaways)
+- "misconceptions": array of 3 strings (Common student errors or misunderstandings to avoid)
+- "glossary": array of 4 objects, each with {"term": string, "definition": string}
+- "remedialSteps": array of 3 objects, each with {"step": integer, "title": string, "description": string}
+
+Context:
+${context}
+`;
+
+  const parseJsonResponse = (text) => {
+    if (!text) throw new Error("Empty response received from AI model.");
+    let clean = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    const startIdx = clean.indexOf('{');
+    const endIdx = clean.lastIndexOf('}');
+    if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+      clean = clean.substring(startIdx, endIdx + 1);
+    }
+    const data = JSON.parse(clean);
+    if (!data.topicTitle || !Array.isArray(data.summaryPoints)) {
+      throw new Error("Invalid response format: Missing study plan fields.");
+    }
+    return data;
+  };
+
+  if (provider === "gemini") {
+    const model = getModel();
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "OBJECT",
+          properties: {
+            topicTitle: { type: "STRING" },
+            summaryPoints: { type: "ARRAY", items: { type: "STRING" } },
+            misconceptions: { type: "ARRAY", items: { type: "STRING" } },
+            glossary: {
+              type: "ARRAY",
+              items: {
+                type: "OBJECT",
+                properties: {
+                  term: { type: "STRING" },
+                  definition: { type: "STRING" }
+                },
+                required: ["term", "definition"]
+              }
+            },
+            remedialSteps: {
+              type: "ARRAY",
+              items: {
+                type: "OBJECT",
+                properties: {
+                  step: { type: "INTEGER" },
+                  title: { type: "STRING" },
+                  description: { type: "STRING" }
+                },
+                required: ["step", "title", "description"]
+              }
+            }
+          },
+          required: ["topicTitle", "summaryPoints", "misconceptions", "glossary", "remedialSteps"]
+        }
+      }
+    });
+
+    const responseText = result.response.text();
+    return parseJsonResponse(responseText);
+  } else {
+    const baseUrl = localStorage.getItem("edu-path-custom-base-url") || "https://opencode.ai/zen/v1";
+    const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
+
+    const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: customModel,
+        messages: [
+          { role: "system", content: "You are an educational remedial study planner. Output valid JSON matching the schema." },
+          { role: "user", content: prompt }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.5
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      let parseErr;
+      try { parseErr = JSON.parse(errText); } catch {}
+      const errMsg = parseErr?.error?.message || errText || response.statusText;
+      throw new Error(`API Error (${response.status}): ${errMsg}`);
+    }
+
+    const data = await response.json();
+    const responseText = data.choices[0].message.content;
+    return parseJsonResponse(responseText);
+  }
+};
+
 export const evaluateAnswers = (questions, userAnswers) => {
   const results = questions.map((q) => {
     const isCorrect = userAnswers[q.id] === q.correctAnswerIndex;

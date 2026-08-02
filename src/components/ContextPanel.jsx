@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { FileText, Save, Check, Sparkles, BookOpen } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { FileText, Save, Check, Sparkles, BookOpen, Upload } from 'lucide-react';
 
 const SAMPLE_CONTEXTS = [
   {
@@ -24,6 +24,7 @@ export default function ContextPanel({ contextText = '', onSaveContext }) {
   const [text, setText] = useState(contextText || '');
   const [isSaving, setIsSaving] = useState(false);
   const [showSavedAnimation, setShowSavedAnimation] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     setText(contextText || '');
@@ -37,6 +38,16 @@ export default function ContextPanel({ contextText = '', onSaveContext }) {
       setShowSavedAnimation(true);
       setTimeout(() => setShowSavedAnimation(false), 2000);
     }, 600);
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setText(event.target.result);
+    };
+    reader.readAsText(file);
   };
 
   const loadSample = (sampleText) => {
@@ -54,7 +65,7 @@ export default function ContextPanel({ contextText = '', onSaveContext }) {
           borderRadius: 'var(--radius-md)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
+          justify-content: 'center',
           flexShrink: 0
         }}>
           <BookOpen size={24} color="white" />
@@ -62,7 +73,7 @@ export default function ContextPanel({ contextText = '', onSaveContext }) {
         <div>
           <h2 style={{ fontSize: 'var(--font-lg)', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '4px' }}>Course Context Ingestion</h2>
           <p style={{ fontSize: 'var(--font-sm)', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-            Paste the lecture transcript, textbook section, or syllabus topics you are currently studying. Edu-Path's AI will use this content to answer your doubts and generate target-specific practice quizzes.
+            Paste or upload lecture transcripts, textbook sections, or notes. Edu-Path's AI will use this content for doubt resolution, quizzes, flashcards, and study roadmaps.
           </p>
         </div>
       </div>
@@ -82,13 +93,32 @@ export default function ContextPanel({ contextText = '', onSaveContext }) {
 
           <textarea
             className="input textarea"
-            placeholder="Paste your course content here (e.g. transcript, article, notes, or copy-paste from a slide)..."
+            placeholder="Paste or upload your course content here (e.g. transcript, article, notes, or slides)..."
             value={text}
             onChange={(e) => setText(e.target.value)}
             style={{ minHeight: '300px', flexGrow: 1 }}
           />
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-3)' }}>
+            <div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept=".txt,.md,.json,.csv"
+                onChange={handleFileUpload}
+                style={{ display: 'none' }}
+              />
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => fileInputRef.current?.click()}
+                title="Upload file (.txt, .md, .json, .csv)"
+              >
+                <Upload size={16} />
+                <span>Upload File</span>
+              </button>
+            </div>
+
             <button
               onClick={handleSave}
               className={`btn ${showSavedAnimation ? 'btn-success' : 'btn-primary'}`}
@@ -113,6 +143,7 @@ export default function ContextPanel({ contextText = '', onSaveContext }) {
               )}
             </button>
           </div>
+        </div>
         </div>
 
         {/* Demo Content Sidebar */}
