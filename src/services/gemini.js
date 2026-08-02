@@ -26,6 +26,9 @@ const getModel = (modelName = "gemini-2.0-flash", systemInstruction) => {
 };
 
 export const askDoubt = async (context, question, language = "English") => {
+  const provider = localStorage.getItem("edu-path-api-provider") || "gemini";
+  const apiKey = localStorage.getItem("edu-path-api-key") || "";
+
   const systemInstruction = `You are a helpful, expert AI teaching assistant for a MOOC. 
 Your goal is to explain difficult topics in a simple, step-by-step, intuitive manner.
 Answer the student's question based on the provided educational context.
@@ -36,8 +39,6 @@ If ${language} is "Hinglish", use a friendly, conversational mix of Hindi and En
 Use markdown format for your answers (bolding, lists, and code blocks for technical items).
 Provide a structured, step-by-step explanation.`;
 
-  const model = getModel("gemini-2.0-flash", systemInstruction);
-
   const prompt = `
 Educational Context:
 ${context || "No context provided. Use general educational/academic knowledge to answer."}
@@ -46,55 +47,141 @@ Student's Question:
 ${question}
 `;
 
-  const result = await model.generateContent(prompt);
-  return result.response.text();
+  if (provider === "gemini") {
+    const model = getModel("gemini-2.0-flash", systemInstruction);
+    const result = await model.generateContent(prompt);
+    return result.response.text();
+  } else {
+    // Custom OpenAI-compatible / Proxy (e.g. OpenCode Zen)
+    const baseUrl = localStorage.getItem("edu-path-custom-base-url") || "https://api.opencode.ai/v1";
+    const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
+
+    const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: customModel,
+        messages: [
+          { role: "system", content: systemInstruction },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.7
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      let parseErr;
+      try {
+        parseErr = JSON.parse(errText);
+      } catch (e) {}
+      const errMsg = parseErr?.error?.message || errText || response.statusText;
+      throw new Error(`API Error (${response.status}): ${errMsg}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+  }
 };
 
 export const generateQuiz = async (context) => {
-  const model = getModel();
-  
+  const provider = localStorage.getItem("edu-path-api-provider") || "gemini";
+  const apiKey = localStorage.getItem("edu-path-api-key") || "";
+
   const prompt = `
 Generate exactly 3 multiple choice questions (MCQs) to test understanding of the following educational context.
 Each question must have exactly 4 choices, a correct answer index (0-based, 0 to 3), and a short helpful explanation.
+
+Return the response in a JSON object with a single root key "quizzes", which is an array of questions.
+Each question object in the "quizzes" array must contain:
+- "id": integer (0, 1, 2)
+- "question": string
+- "options": array of exactly 4 strings
+- "correctAnswerIndex": integer (0 to 3)
+- "explanation": string
 
 Context:
 ${context}
 `;
 
-  const result = await model.generateContent({
-    contents: [{ role: "user", parts: [{ text: prompt }] }],
-    generationConfig: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: "OBJECT",
-        properties: {
-          quizzes: {
-            type: "ARRAY",
-            items: {
-              type: "OBJECT",
-              properties: {
-                id: { type: "INTEGER" },
-                question: { type: "STRING" },
-                options: {
-                  type: "ARRAY",
-                  items: { type: "STRING" },
-                  description: "Exactly 4 options"
+  if (provider === "gemini") {
+    const model = getModel();
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "OBJECT",
+          properties: {
+            quizzes: {
+              type: "ARRAY",
+              items: {
+                type: "OBJECT",
+                properties: {
+                  id: { type: "INTEGER" },
+                  question: { type: "STRING" },
+                  options: {
+                    type: "ARRAY",
+                    items: { type: "STRING" },
+                    description: "Exactly 4 options"
+                  },
+                  correctAnswerIndex: { type: "INTEGER", description: "0-based index of the correct answer (0 to 3)" },
+                  explanation: { type: "STRING", description: "Why the answer is correct" }
                 },
-                correctAnswerIndex: { type: "INTEGER", description: "0-based index of the correct answer (0 to 3)" },
-                explanation: { type: "STRING", description: "Why the answer is correct" }
-              },
-              required: ["id", "question", "options", "correctAnswerIndex", "explanation"]
+                required: ["id", "question", "options", "correctAnswerIndex", "explanation"]
+              }
             }
-          }
-        },
-        required: ["quizzes"]
+          },
+          required: ["quizzes"]
+        }
       }
-    }
-  });
+    });
 
-  const responseText = result.response.text();
-  const data = JSON.parse(responseText);
-  return data.quizzes;
+    const responseText = result.response.text();
+    const data = JSON.parse(responseText);
+    return data.quizzes;
+  } else {
+    // Custom OpenAI-compatible / Proxy (e.g. OpenCode Zen)
+    const baseUrl = localStorage.getItem("edu-path-custom-base-url") || "https://api.opencode.ai/v1";
+    const customModel = localStorage.getItem("edu-path-custom-model") || "gemini-2.0-flash";
+
+    const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: customModel,
+        messages: [
+          { role: "system", content: "You are an educational quiz generation assistant. You must output valid JSON matching the requested schema." },
+          { role: "user", content: prompt }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.5
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      let parseErr;
+      try {
+        parseErr = JSON.parse(errText);
+      } catch (e) {}
+      const errMsg = parseErr?.error?.message || errText || response.statusText;
+      throw new Error(`API Error (${response.status}): ${errMsg}`);
+    }
+
+    const data = await response.json();
+    const responseText = data.choices[0].message.content;
+    const quizData = JSON.parse(responseText);
+    return quizData.quizzes;
+  }
 };
 
 export const evaluateAnswers = (questions, userAnswers) => {
