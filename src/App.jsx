@@ -10,7 +10,6 @@ import { initializeGemini } from './services/gemini';
 
 const API_KEY_STORAGE = 'edu-path-api-key';
 const CONTEXT_STORAGE = 'edu-path-context';
-const HISTORY_STORAGE = 'edu-path-chat-history';
 const LANGUAGE_STORAGE = 'edu-path-language';
 
 export default function App() {
@@ -18,20 +17,10 @@ export default function App() {
   const [contextText, setContextText] = useState(() => localStorage.getItem(CONTEXT_STORAGE) || '');
   const [apiKey, setApiKey] = useState(() => localStorage.getItem(API_KEY_STORAGE) || '');
   const [language, setLanguage] = useState(() => localStorage.getItem(LANGUAGE_STORAGE) || 'English');
-  const [chatHistory, setChatHistory] = useState([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  // Load initial configurations from localStorage
+  // Initialize Gemini on mount / key change
   useEffect(() => {
-    const savedHistory = localStorage.getItem(HISTORY_STORAGE);
-    if (savedHistory) {
-      try {
-        setChatHistory(JSON.parse(savedHistory));
-      } catch (e) {
-        console.error('Error parsing chat history:', e);
-      }
-    }
-
     if (apiKey) {
       initializeGemini(apiKey);
     } else {
@@ -54,17 +43,6 @@ export default function App() {
   const handleChangeLanguage = (newLang) => {
     setLanguage(newLang);
     localStorage.setItem(LANGUAGE_STORAGE, newLang);
-  };
-
-  const handleAddMessage = (newMsg) => {
-    const updatedHistory = [...chatHistory, newMsg];
-    setChatHistory(updatedHistory);
-    localStorage.setItem(HISTORY_STORAGE, JSON.stringify(updatedHistory));
-  };
-
-  const handleClearHistory = () => {
-    setChatHistory([]);
-    localStorage.removeItem(HISTORY_STORAGE);
   };
 
   const hasContext = contextText.trim().length > 0;
@@ -107,6 +85,7 @@ export default function App() {
           {currentView === 'chat' && (
             <ChatInterface
               context={contextText}
+              language={language}
             />
           )}
           {currentView === 'quiz' && (

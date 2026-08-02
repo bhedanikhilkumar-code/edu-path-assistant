@@ -10,7 +10,7 @@ const SUGGESTED_QUESTIONS = [
   'What are the most important points to remember?',
 ];
 
-export default function ChatInterface({ context }) {
+export default function ChatInterface({ context, language }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -36,8 +36,7 @@ export default function ChatInterface({ context }) {
     setError('');
 
     try {
-      const history = messages.map((m) => ({ role: m.role, content: m.content }));
-      const response = await askDoubt(context, text.trim(), history);
+      const response = await askDoubt(context, text.trim(), language);
       setMessages((prev) => [...prev, { role: 'assistant', content: response }]);
     } catch (err) {
       setError(err.message || 'Something went wrong. Please try again.');

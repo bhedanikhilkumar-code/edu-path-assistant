@@ -424,4 +424,19 @@ body::before {
   :root {
     --sidebar-width: 0px;
   }
+
+  /* Hide sidebar on mobile — MobileNav replaces it */
+  aside {
+    display: none !important;
+  }
+
+  /* Stack context panel grid vertically on mobile */
+  .context-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Add bottom padding so mobile nav doesn't cover content */
+  main {
+    padding-bottom: 80px !important;
+  }
 }

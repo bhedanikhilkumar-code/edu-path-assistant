@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { BrainCircuit, Loader2, RefreshCw, CheckCircle2, XCircle, Trophy, ChevronRight, Sparkles } from 'lucide-react';
 import { generateQuiz, evaluateAnswers } from '../services/gemini';
 
+const OPTION_LABELS = ['A', 'B', 'C', 'D'];
+
 export default function QuizModule({ context }) {
   const [questions, setQuestions] = useState(null);
   const [userAnswers, setUserAnswers] = useState({});
   const [results, setResults] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isEvaluating, setIsEvaluating] = useState(false);
   const [error, setError] = useState('');
 
   const handleGenerate = async () => {
@@ -27,32 +28,18 @@ export default function QuizModule({ context }) {
     }
   };
 
-  const handleSelectAnswer = (qId, option) => {
+  const handleSelectAnswer = (qId, optionIndex) => {
     if (results) return; // Don't allow changes after evaluation
-    setUserAnswers((prev) => ({ ...prev, [qId]: option }));
+    setUserAnswers((prev) => ({ ...prev, [qId]: optionIndex }));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!questions) return;
-    setIsEvaluating(true);
-    try {
-      const evalResults = await evaluateAnswers(context, questions, userAnswers);
-      setResults(evalResults);
-    } catch (err) {
-      setError(err.message || 'Failed to evaluate. Please try again.');
-    } finally {
-      setIsEvaluating(false);
-    }
+    const evalResults = evaluateAnswers(questions, userAnswers);
+    setResults(evalResults);
   };
 
   const allAnswered = questions && Object.keys(userAnswers).length === questions.length;
-
-  const difficultyColor = (d) => {
-    const dl = d?.toLowerCase();
-    if (dl === 'easy') return 'var(--accent-emerald)';
-    if (dl === 'medium' || dl === 'moderate') return 'var(--accent-amber)';
-    return 'var(--accent-rose)';
-  };
 
   return (
     <div className="quiz-module animate-fade-in">
@@ -127,27 +114,24 @@ export default function QuizModule({ context }) {
               >
                 <div className="q-header">
                   <span className="q-number">Q{i + 1}</span>
-                  <span className="q-difficulty" style={{ color: difficultyColor(q.difficulty) }}>
-                    {q.difficulty}
-                  </span>
                 </div>
                 <p className="q-text">{q.question}</p>
 
                 <div className="q-options">
-                  {Object.entries(q.options).map(([key, value]) => {
-                    const isSelected = userAnswers[q.id] === key;
-                    const isCorrectOption = result && key === q.correctAnswer;
+                  {q.options.map((optionText, optIdx) => {
+                    const isSelected = userAnswers[q.id] === optIdx;
+                    const isCorrectOption = result && optIdx === q.correctAnswerIndex;
                     const isWrongSelected = result && isSelected && !result.isCorrect;
 
                     return (
                       <button
-                        key={key}
+                        key={optIdx}
                         className={`option-btn ${isSelected ? 'option-selected' : ''} ${isCorrectOption ? 'option-correct' : ''} ${isWrongSelected ? 'option-wrong' : ''}`}
-                        onClick={() => handleSelectAnswer(q.id, key)}
+                        onClick={() => handleSelectAnswer(q.id, optIdx)}
                         disabled={!!results}
                       >
-                        <span className="option-key">{key}</span>
-                        <span className="option-text">{value}</span>
+                        <span className="option-key">{OPTION_LABELS[optIdx]}</span>
+                        <span className="option-text">{optionText}</span>
                         {isCorrectOption && <CheckCircle2 size={16} className="option-icon-right" />}
                         {isWrongSelected && <XCircle size={16} className="option-icon-wrong" />}
                       </button>
@@ -159,7 +143,7 @@ export default function QuizModule({ context }) {
                   <div className={`q-explanation ${result.isCorrect ? 'explain-correct' : 'explain-wrong'}`}>
                     <div className="explain-header">
                       {result.isCorrect ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
-                      <strong>{result.isCorrect ? 'Correct!' : `Incorrect — Answer: ${q.correctAnswer}`}</strong>
+                      <strong>{result.isCorrect ? 'Correct!' : `Incorrect — Answer: ${OPTION_LABELS[q.correctAnswerIndex]}`}</strong>
                     </div>
                     <p>{q.explanation}</p>
                   </div>
@@ -174,13 +158,9 @@ export default function QuizModule({ context }) {
               <button
                 className="btn btn-primary quiz-submit-btn"
                 onClick={handleSubmit}
-                disabled={!allAnswered || isEvaluating}
+                disabled={!allAnswered}
               >
-                {isEvaluating ? (
-                  <><Loader2 size={18} className="spinning" /> Evaluating...</>
-                ) : (
-                  <><ChevronRight size={18} /> Submit Answers</>
-                )}
+                <ChevronRight size={18} /> Submit Answers
               </button>
             ) : (
               <button className="btn btn-primary quiz-submit-btn" onClick={handleGenerate}>
@@ -353,12 +333,6 @@ export default function QuizModule({ context }) {
           background: rgba(99,102,241,0.15);
           padding: var(--space-1) var(--space-3);
           border-radius: var(--radius-full);
-        }
-        .q-difficulty {
-          font-size: var(--font-xs);
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
         }
         .q-text {
           font-size: var(--font-md);

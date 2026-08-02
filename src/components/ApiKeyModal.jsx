@@ -27,13 +27,13 @@ export default function ApiKeyModal({ isOpen, onClose, onSave }) {
       return;
     }
 
-    // Gemini API keys usually start with AIzaSy and are about 39 characters
-    if (!trimmedKey.startsWith('AIzaSy')) {
-      setError('Invalid API Key format. It should start with "AIzaSy"');
+    // Gemini API keys usually start with AIzaSy or AQ
+    if (!trimmedKey.startsWith('AIzaSy') && !trimmedKey.startsWith('AQ')) {
+      setError('Invalid API Key format. It should start with "AIzaSy" or "AQ"');
       return;
     }
 
-    if (trimmedKey.length < 30) {
+    if (trimmedKey.length < 20) {
       setError('API Key is too short');
       return;
     }
