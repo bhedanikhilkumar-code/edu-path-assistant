@@ -89,6 +89,10 @@ ${question}
 };
 
 export const generateQuiz = async (context) => {
+  if (!context || !context.trim()) {
+    throw new Error("Please add your course context or lecture notes in the 'Course Context' tab before generating a quiz.");
+  }
+
   const provider = localStorage.getItem("edu-path-api-provider") || "gemini";
   const apiKey = localStorage.getItem("edu-path-api-key") || "";
 
@@ -107,6 +111,21 @@ Each question object in the "quizzes" array must contain:
 Context:
 ${context}
 `;
+
+  const parseJsonResponse = (text) => {
+    if (!text) throw new Error("Empty response received from AI model.");
+    let clean = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    const startIdx = clean.indexOf('{');
+    const endIdx = clean.lastIndexOf('}');
+    if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+      clean = clean.substring(startIdx, endIdx + 1);
+    }
+    const data = JSON.parse(clean);
+    if (!data.quizzes || !Array.isArray(data.quizzes)) {
+      throw new Error("Invalid response format: 'quizzes' array missing.");
+    }
+    return data.quizzes;
+  };
 
   if (provider === "gemini") {
     const model = getModel();
@@ -142,8 +161,7 @@ ${context}
     });
 
     const responseText = result.response.text();
-    const data = JSON.parse(responseText);
-    return data.quizzes;
+    return parseJsonResponse(responseText);
   } else {
     // Custom OpenAI-compatible / Proxy (e.g. OpenCode Zen)
     const baseUrl = localStorage.getItem("edu-path-custom-base-url") || "https://opencode.ai/zen/v1";
@@ -179,8 +197,7 @@ ${context}
 
     const data = await response.json();
     const responseText = data.choices[0].message.content;
-    const quizData = JSON.parse(responseText);
-    return quizData.quizzes;
+    return parseJsonResponse(responseText);
   }
 };
 

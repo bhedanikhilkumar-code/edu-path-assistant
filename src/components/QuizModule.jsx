@@ -12,6 +12,11 @@ export default function QuizModule({ context }) {
   const [error, setError] = useState('');
 
   const handleGenerate = async () => {
+    if (!context || !context.trim()) {
+      setError("No course context found! Please go to the 'Course Context' tab and save your lecture notes/materials first.");
+      return;
+    }
+
     setIsGenerating(true);
     setError('');
     setQuestions(null);

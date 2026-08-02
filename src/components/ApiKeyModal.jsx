@@ -38,11 +38,7 @@ export default function ApiKeyModal({ isOpen, onClose, onSave }) {
     }
 
     if (apiProvider === 'gemini') {
-      if (!trimmedKey.startsWith('AIzaSy') && !trimmedKey.startsWith('AQ')) {
-        setError('Invalid API Key format. It should start with "AIzaSy" or "AQ"');
-        return;
-      }
-      if (trimmedKey.length < 20) {
+      if (trimmedKey.length < 10) {
         setError('API Key is too short');
         return;
       }
